@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+
+# If this is an archive branch (like v1.4 or v1.11),
+# build and push the docs-base branch at the end of
+# a successful build of the branch
+
+if [[ $SOURCE_BRANCH =~ ^v1\.[0-9]+$ ]]; then
+  echo "Here's what our dir structure looks like:"
+  ls -al
+  echo "Clone the repo and check out docs-base branch"
+  git remote -v
+  git fetch origin
+  git checkout docs-base
+  echo "Building docs-base/Dockerfile"
+  docker build -t docs/docker.github.io:docs-base .
+  status=$?
+  if [ $status -ne 0 ]; then
+    echo "Something went wrong. Not pushing."
+    exit 1
+  else
+    docker push docs/docker.github.io:docs-base
+  fi
+fi
